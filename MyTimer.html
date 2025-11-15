@@ -1,0 +1,2038 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的计时 - 作业计时助手</title>
+    <style>
+/* --- style.css 内容开始 --- */
+:root {
+    --color-warm-1: #f5ede3;
+    --color-warm-2: #f0e8dc;
+    --color-warm-3: #ede3d5;
+    --color-warm-4: #d4b5a0;
+    --color-warm-5: #c4a088;
+    --color-warm-6: #b08870;
+    --color-accent-1: #d4a574;
+    --color-accent-2: #d9b8a0;
+    --color-text-dark: #6b5845;
+    --color-text-light: #9b8b7b;
+    --color-shadow: rgba(160, 120, 80, 0.1);
+    --transition-smooth: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    overflow: hidden;
+}
+
+body {
+    background-color: var(--color-warm-1);
+}
+
+/* 背景 */
+.background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    transition: background-image 0.8s ease-in-out;
+}
+
+.background.bg-0 {
+    background: linear-gradient(135deg, #f5ede3 0%, #f0e8dc 25%, #e8d4c0 50%, #dcc8b0 75%, #d0b8a0 100%);
+}
+
+.background.bg-1 {
+    background: linear-gradient(to bottom, 
+        #f5ede3 0%, 
+        #f0e8dc 20%, 
+        #ede3d5 40%, 
+        #e8dcc8 60%, 
+        #dcc8b0 80%, 
+        #d0b8a0 100%);
+}
+
+.background.bg-2 {
+    background: linear-gradient(135deg, 
+        #f5ede3 0%, 
+        #f0e8dc 25%, 
+        #ede3d5 50%, 
+        #e8dcc8 75%, 
+        #dcc8b0 100%);
+}
+
+.background.bg-3 {
+    background: linear-gradient(180deg, 
+        #f5ede3 0%, 
+        #f0e8dc 20%, 
+        #ede3d5 40%, 
+        #e8dcc8 60%, 
+        #dcc8b0 80%, 
+        #d0b8a0 100%);
+}
+
+/* 侧边栏 */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(245, 237, 227, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 30px 20px;
+    overflow: hidden;
+    z-index: 100;
+    border-right: 1px solid rgba(180, 160, 140, 0.2);
+    transition: var(--transition-smooth);
+    box-shadow: 2px 0 20px var(--color-shadow);
+}
+
+.sidebar.collapsed {
+    transform: translateX(-100%);
+}
+
+.sidebar-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--color-accent-1);
+}
+
+.trend-btn {
+    margin-top: 10px;
+    background: transparent;
+    border: 1px solid rgba(180,160,140,0.12);
+    color: var(--color-text-dark);
+    padding: 6px 10px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.trend-btn:hover {
+    background: rgba(212,181,160,0.08);
+}
+.trend-btn svg {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    vertical-align: middle;
+    fill: var(--color-accent-1);
+}
+.trend-btn .trend-label {
+    line-height: 1;
+}
+
+/* 侧边栏底部区域 */
+.sidebar-footer {
+    position: static;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 12px;
+    margin-top: 8px;
+}
+
+.clear-history-btn {
+    background: none;
+    border: 1px solid rgba(180,160,140,0.2);
+    color: var(--color-text-dark);
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: var(--transition-smooth);
+}
+
+.clear-history-btn:hover {
+    background-color: rgba(212,181,160,0.12);
+}
+
+.sidebar-header h1 {
+    color: var(--color-text-dark);
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.sidebar-header .subtitle {
+    color: var(--color-text-light);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.sidebar-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+.sidebar-item {
+    background-color: rgba(255, 255, 255, 0.6);
+    border-radius: 12px;
+    padding: 15px;
+    border-left: 4px solid var(--color-accent-1);
+    transition: var(--transition-smooth);
+    cursor: pointer;
+}
+
+.sidebar-item:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px var(--color-shadow);
+}
+
+.sidebar-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.sidebar-item-title {
+    color: var(--color-text-dark);
+    font-weight: 600;
+    font-size: 14px;
+    flex-grow: 1;
+    cursor: pointer;
+    word-break: break-all;
+}
+
+.sidebar-item-time {
+    color: var(--color-text-light);
+    font-size: 12px;
+    margin: 4px 0;
+}
+
+.sidebar-item-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    color: var(--color-text-light);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px 8px;
+    transition: var(--transition-smooth);
+    border-radius: 4px;
+}
+
+.icon-btn:hover {
+    color: var(--color-text-dark);
+    background-color: rgba(212, 181, 160, 0.2);
+}
+
+.sidebar-mark {
+    margin-left: 12px;
+    margin-top: 10px;
+    padding-left: 12px;
+    border-left: 2px dashed var(--color-accent-2);
+    font-size: 12px;
+    color: var(--color-text-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: rgba(232, 196, 160, 0.15);
+    border-radius: 8px;
+    margin-right: 0;
+}
+
+.sidebar-mark-info {
+    flex-grow: 1;
+}
+
+.sidebar-mark-name {
+    color: var(--color-text-dark);
+    font-weight: 500;
+    display: block;
+}
+
+.sidebar-mark-time {
+    color: var(--color-text-light);
+    font-size: 11px;
+    display: block;
+}
+
+.sidebar-mark-actions {
+    display: flex;
+    gap: 6px;
+}
+
+/* 侧边栏切换按钮 */
+.sidebar-toggle {
+    position: fixed;
+    top: 20px;
+    left: 260px;
+    width: 40px;
+    height: 40px;
+    background-color: var(--color-accent-1);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 101;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    transition: var(--transition-smooth);
+    box-shadow: 0 4px 12px var(--color-shadow);
+}
+
+.sidebar.collapsed ~ .sidebar-toggle {
+    left: -20px;
+}
+
+.sidebar-toggle:hover {
+    background-color: var(--color-warm-5);
+    box-shadow: 0 6px 16px var(--color-shadow);
+}
+
+.sidebar-toggle:active {
+    transform: scale(0.95);
+}
+
+.sidebar-toggle.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.sidebar-toggle span {
+    width: 18px;
+    height: 2px;
+    background-color: var(--color-text-dark);
+    border-radius: 1px;
+    transition: var(--transition-smooth);
+}
+
+.sidebar-toggle.rotated span:nth-child(1) {
+    transform: rotate(45deg) translateY(7px);
+}
+
+.sidebar-toggle.rotated span:nth-child(2) {
+    opacity: 0;
+}
+
+.sidebar-toggle.rotated span:nth-child(3) {
+    transform: rotate(-45deg) translateY(-7px);
+}
+
+/* 主容器 */
+.main-container {
+    margin-left: 280px;
+    width: calc(100% - 280px);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    transition: var(--transition-smooth);
+}
+
+.main-container.sidebar-collapsed {
+    margin-left: 0;
+    width: 100%;
+}
+
+/* 背景选择器 */
+.background-selector {
+    position: absolute;
+    top: 40px;
+    right: 40px;
+    display: flex;
+    gap: 12px;
+}
+
+.bg-btn {
+    background-color: rgba(255, 255, 255, 0.6);
+    border: 2px solid transparent;
+    color: var(--color-text-dark);
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: var(--transition-smooth);
+    backdrop-filter: blur(10px);
+}
+
+.bg-btn:hover {
+    background-color: rgba(255, 255, 255, 0.85);
+    transform: scale(1.05);
+}
+
+.bg-btn.active {
+    background-color: #d4a574;
+    border-color: #c4945c;
+    color: var(--color-text-dark);
+}
+
+/* 计时器部分 */
+.timer-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    width: 100%;
+    max-width: 100%;
+}
+
+.timer-header {
+    text-align: center;
+}
+
+.timer-subtitle {
+    color: var(--color-text-light);
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    font-weight: 400;
+    margin: 0;
+}
+
+.timer-title {
+    color: var(--color-text-dark);
+    font-size: 42px;
+    font-weight: 700;
+    margin: 8px 0 0 0;
+    letter-spacing: 0px;
+}
+
+/* 计时器显示 */
+.timer-display {
+    display: grid;
+    grid-template-columns: auto auto auto auto auto;
+    align-items: center;
+    justify-items: center;
+    gap: 20px;
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    border-radius: 28px;
+    padding: 60px 80px;
+    box-shadow: 0 12px 40px rgba(160, 120, 80, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    width: fit-content;
+}
+
+.timer-display .time-unit:nth-of-type(1) {
+    grid-column: 1;
+    grid-row: 1 / 3;
+}
+
+.timer-display .time-separator:nth-of-type(1) {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    margin: 0;
+}
+
+.timer-display .time-unit:nth-of-type(2) {
+    grid-column: 3;
+    grid-row: 1 / 3;
+}
+
+.timer-display .time-separator:nth-of-type(2) {
+    grid-column: 4;
+    grid-row: 1 / 3;
+    margin: 0;
+}
+
+.timer-display .time-unit:nth-of-type(3) {
+    grid-column: 5;
+    grid-row: 1 / 3;
+}
+
+.timer-display .button-group {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    margin-top: 20px;
+}
+
+.timer-display .tips {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    margin-top: 10px;
+}
+
+.time-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.time-value {
+    font-size: 72px;
+    font-weight: 400;
+    color: var(--color-text-dark);
+    font-family: 'Gill Sans', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1;
+    letter-spacing: 1px;
+}
+
+.time-label {
+    font-size: 13px;
+    color: var(--color-text-light);
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+
+.time-separator {
+    font-size: 52px;
+    color: var(--color-accent-1);
+    font-weight: 400;
+    opacity: 1;
+    padding: 0 8px;
+}
+
+@keyframes blink {
+    0%, 49%, 100% {
+        opacity: 1;
+    }
+    50%, 99% {
+        opacity: 0.4;
+    }
+}
+
+/* 按钮组 */
+.button-group {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+    width: 100%;
+}
+
+.btn {
+    padding: 14px 40px;
+    border: none;
+    border-radius: 28px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    box-shadow: 0 4px 16px var(--color-shadow);
+    border: 2px solid transparent;
+}
+
+.btn-start {
+    background-color: #d4a574;
+    color: var(--color-text-dark);
+    min-width: 100px;
+}
+
+.btn-start:hover:not(:disabled) {
+    background-color: #c4945c;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px var(--color-shadow);
+}
+
+.btn-start:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-mark {
+    background-color: #f0e8dc;
+    color: var(--color-text-dark);
+    border: 1px solid #dcc8b0;
+}
+
+.btn-mark:hover:not(:disabled) {
+    background-color: #ede3d5;
+    border-color: #d0b8a0;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px var(--color-shadow);
+}
+
+.btn-mark:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-mark:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-end {
+    background-color: #f5f5f5;
+    color: var(--color-text-dark);
+    border: 1px solid #dcc8b0;
+}
+
+.btn-end:hover:not(:disabled) {
+    background-color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px var(--color-shadow);
+}
+
+.btn-end:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-end:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.tips {
+    color: var(--color-text-light);
+    font-size: 13px;
+    text-align: center;
+    letter-spacing: 0.5px;
+    margin-top: 10px;
+    width: 100%;
+}
+
+/* 模态框 */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.modal.active {
+    display: flex;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-content {
+    background-color: rgba(255, 255, 255, 0.98);
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: 0 12px 40px rgba(160, 120, 80, 0.15);
+    animation: slideUp 0.3s ease-in-out;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.modal-title {
+    color: var(--color-text-dark);
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    text-align: left;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: var(--color-text-light);
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-smooth);
+}
+
+.modal-close:hover {
+    color: var(--color-text-dark);
+}
+
+.modal-description {
+    color: var(--color-text-light);
+    font-size: 14px;
+    margin-bottom: 20px;
+    text-align: left;
+    line-height: 1.5;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid #d4c4b0;
+    border-radius: 16px;
+    font-size: 14px;
+    color: var(--color-text-dark);
+    font-family: inherit;
+    transition: var(--transition-smooth);
+    margin-bottom: 28px;
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+.modal-input::placeholder {
+    color: #b8a89a;
+}
+
+.modal-input:focus {
+    outline: none;
+    border-color: #d4a574;
+    background-color: rgba(255, 255, 255, 1);
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: flex-end;
+}
+
+.modal-btn {
+    padding: 12px 32px;
+    border: none;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    flex: 1;
+}
+
+.modal-btn.cancel {
+    background-color: #f0e8dc;
+    color: var(--color-text-dark);
+    border: 1px solid #dcc8b0;
+}
+
+.modal-btn.cancel:hover {
+    background-color: #ede3d5;
+}
+
+.modal-btn.confirm {
+    background-color: #d4a574;
+    color: white;
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(212, 181, 160, 0.1);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-accent-1);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-warm-5);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 240px;
+        padding: 20px 15px;
+    }
+
+    .main-container {
+        margin-left: 240px;
+        width: calc(100% - 240px);
+        padding: 20px;
+    }
+
+    .sidebar-toggle {
+        left: 220px;
+    }
+
+    .sidebar.collapsed ~ .sidebar-toggle {
+        left: -20px;
+    }
+
+    .timer-display {
+        padding: 40px 40px;
+        gap: 10px;
+    }
+
+    .time-value {
+        font-size: 48px;
+    }
+
+    .time-separator {
+        font-size: 36px;
+    }
+
+    .button-group {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .btn {
+        padding: 10px 24px;
+        font-size: 14px;
+    }
+
+    .background-selector {
+        top: 20px;
+        right: 20px;
+        gap: 8px;
+    }
+
+    .bg-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .timer-title {
+        font-size: 24px;
+    }
+}
+
+/* 标签气泡样式 */
+.tag-bubble {
+    background: rgba(240,236,232,0.9);
+    border: 1px solid rgba(212,181,160,0.3);
+    padding: 6px 10px;
+    border-radius: 16px;
+    font-size: 13px;
+    cursor: pointer;
+    position: relative;
+}
+.tag-bubble.selected {
+    background: #d4a574;
+    color: #fff;
+    border-color: #c4945c;
+}
+.tag-bubble.tag-add {
+    background: transparent;
+    border: 1px dashed rgba(180,160,140,0.25);
+    color: var(--color-text-dark);
+}
+
+/* 标签删除小图标 */
+.tag-close {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(200,100,60,0.95);
+    color: #fff;
+    font-size: 12px;
+    line-height: 18px;
+    text-align: center;
+    display: none;
+    cursor: pointer;
+}
+.tag-bubble:hover .tag-close {
+    display: block;
+}
+
+/* 侧边栏中显示的标记气泡样式（比模态中的小一些） */
+.sidebar-mark-bubble {
+    display: inline-block;
+    background: rgba(240,236,232,0.95);
+    border: 1px solid rgba(212,181,160,0.25);
+    padding: 6px 10px;
+    border-radius: 14px;
+    font-size: 12px;
+    color: var(--color-text-dark);
+    margin-right: 8px;
+    cursor: pointer;
+}
+.sidebar-mark-bubble.selected {
+    background: #d4a574;
+    color: #fff;
+    border-color: #c4945c;
+}
+
+@media (max-width: 480px) {
+    .sidebar {
+        width: 100%;
+        height: 60vh;
+        bottom: 0;
+        left: 0;
+        top: auto;
+        border-right: none;
+        border-top: 1px solid rgba(180, 160, 140, 0.2);
+    }
+
+    .sidebar.collapsed {
+        transform: translateY(100%);
+    }
+
+    .main-container {
+        margin-left: 0;
+        width: 100%;
+        padding: 20px;
+    }
+
+    .sidebar-toggle {
+        bottom: 20px;
+        top: auto;
+        left: 50%;
+        margin-left: -20px;
+    }
+
+    .sidebar.collapsed ~ .sidebar-toggle {
+        bottom: calc(-60vh - 20px);
+    }
+
+    .background-selector {
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+/* --- style.css 内容结束 --- */
+    </style>
+</head>
+<body>
+    <!-- 背景 -->
+    <div class="background bg-1" id="background"></div>
+    
+    <!-- 侧边栏切换按钮 -->
+    <button class="sidebar-toggle" id="sidebarToggle">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    
+    <!-- 侧边栏 -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h1>我的计时</h1>
+            <p class="subtitle">记录每一次专注与思思</p>
+            <button id="trendBtn" class="trend-btn" title="查看标签用时趋势">
+                <!-- 小型折线图图标（填充使用 var(--color-accent-1)） -->
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M3 17h2v-6l4 4 4-6 6 8h2v2H3v-2z" />
+                </svg>
+                <span class="trend-label">趋势分析</span>
+            </button>
+        </div>
+        
+        <div class="sidebar-content" id="sidebarContent">
+            <!-- 计时项目将在这里动态添加 -->
+        </div>
+
+        <div class="sidebar-footer">
+            <button class="clear-history-btn" id="clearHistoryBtn" title="清空历史记录">清空记录</button>
+        </div>
+    
+    </aside>
+    
+    <!-- 主容器 -->
+    <main class="main-container">
+        <!-- 背景为固定渐变，不提供切换 -->
+        
+        <!-- 计时器部分 -->
+        <section class="timer-section">
+            <div class="timer-header">
+                <p class="timer-subtitle">温暖的专注时刻</p>
+                <h2 class="timer-title">准备开始新的计时</h2>
+            </div>
+            
+            <div class="timer-display">
+                <div class="time-unit">
+                    <span class="time-value" id="hours">00</span>
+                    <span class="time-label">小时</span>
+                </div>
+                <span class="time-separator">:</span>
+                <div class="time-unit">
+                    <span class="time-value" id="minutes">00</span>
+                    <span class="time-label">分钟</span>
+                </div>
+                <span class="time-separator">:</span>
+                <div class="time-unit">
+                    <span class="time-value" id="seconds">00</span>
+                    <span class="time-label">秒</span>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn btn-start" id="startBtn">开始</button>
+                    <button class="btn btn-mark" id="markBtn" disabled>标记</button>
+                    <button class="btn btn-end" id="endBtn" disabled>结束</button>
+                </div>
+                
+                <p class="tips">长按标记按钮，为每个完成阶段命名。</p>
+            </div>
+        </section>
+    </main>
+    
+    <!-- 输入计时名称的模态框 -->
+    <div class="modal" id="nameModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <p class="modal-title">给这次专注取个名字</p>
+                <button class="modal-close" id="nameClose">✕</button>
+            </div>
+            <p class="modal-description">一个温暖的名字，帮你记住每一次的努力。</p>
+            <input type="text" class="modal-input" id="nameInput" placeholder="在这里输入">
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" id="nameCancel">取消</button>
+                <button class="modal-btn confirm" id="nameConfirm">开始计时</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 选择/添加标签的模态框（标签以气泡按钮呈现） -->
+    <div class="modal" id="markModal">
+        <div class="modal-content">
+            <p class="modal-title">选择标签</p>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+                <div id="tagContainer" class="tag-pool" style="min-height:44px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:6px 4px;">
+                    <!-- 标签气泡由 JS 渲染 -->
+                </div>
+
+                <div id="newTagContainer" style="display:none;flex-direction:row;gap:8px;align-items:center;width:100%;">
+                    <input type="text" id="newTagInput" class="modal-input" placeholder="新标签名称" style="flex:1;">
+                    <button type="button" id="addTagConfirm" class="modal-btn confirm" style="padding:8px 12px;border-radius:12px;">添加</button>
+                    <button type="button" id="addTagCancel" class="modal-btn cancel" style="padding:8px 12px;border-radius:12px;">取消</button>
+                </div>
+            </div>
+            <div class="modal-buttons" style="margin-top:10px;">
+                <button class="modal-btn cancel" id="markCancel">取消</button>
+                <button class="modal-btn confirm" id="markConfirm">确定</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 重命名模态框 -->
+    <div class="modal" id="renameModal">
+        <div class="modal-content">
+            <p class="modal-title" id="renameTitle">重命名</p>
+            <input type="text" class="modal-input" id="renameInput" placeholder="输入新名称">
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" id="renameCancel">取消</button>
+                <button class="modal-btn confirm" id="renameConfirm">确定</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 趋势分析模态框 -->
+    <div class="modal" id="trendModal">
+        <div class="modal-content" style="max-width:900px; width:95%; max-height:80vh; overflow:auto;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <p class="modal-title">趋势分析</p>
+                <button class="modal-close" id="trendClose">✕</button>
+            </div>
+            <p class="modal-description">每个标签对应一条用时趋势曲线。横轴为每次计时的名称，纵轴为用时。</p>
+            <div id="trendContainer" style="display:flex;flex-direction:column;gap:18px;padding-top:8px;padding-bottom:12px;">
+                <!-- 每个标签的图表块将由 JS 插入 -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+/* --- script.js 内容开始 --- */
+// 全局变量
+let isRunning = false;
+let isPaused = false;
+let elapsedSeconds = 0;
+let lastMarkTime = 0;
+let currentSessionId = null;
+let allSessions = [];
+let renameTarget = null;
+let wasRunningBeforeMark = false; // 标记点击时是否在计时中
+let editingMarkTarget = null; // 当编辑已有标记时：{ sessionId, markIndex }
+
+const DOM = {
+    hours: document.getElementById('hours'),
+    minutes: document.getElementById('minutes'),
+    seconds: document.getElementById('seconds'),
+    startBtn: document.getElementById('startBtn'),
+    markBtn: document.getElementById('markBtn'),
+    endBtn: document.getElementById('endBtn'),
+    sidebar: document.getElementById('sidebar'),
+    sidebarContent: document.getElementById('sidebarContent'),
+    sidebarToggle: document.getElementById('sidebarToggle'),
+    mainContainer: document.getElementById('main-container'),
+    background: document.getElementById('background'),
+    nameModal: document.getElementById('nameModal'),
+    nameInput: document.getElementById('nameInput'),
+    nameCancel: document.getElementById('nameCancel'),
+    nameConfirm: document.getElementById('nameConfirm'),
+    markModal: document.getElementById('markModal'),
+    tagContainer: document.getElementById('tagContainer'),
+    newTagContainer: document.getElementById('newTagContainer'),
+    newTagInput: document.getElementById('newTagInput'),
+    addTagConfirm: document.getElementById('addTagConfirm'),
+    addTagCancel: document.getElementById('addTagCancel'),
+    markCancel: document.getElementById('markCancel'),
+    markConfirm: document.getElementById('markConfirm'),
+    renameModal: document.getElementById('renameModal'),
+    renameInput: document.getElementById('renameInput'),
+    renameCancel: document.getElementById('renameCancel'),
+    renameConfirm: document.getElementById('renameConfirm'),
+    timerTitle: document.querySelector('.timer-title'),
+    clearHistoryBtn: document.getElementById('clearHistoryBtn'),
+};
+
+const TAGS_KEY = 'studyTimerTags';
+let presetTags = [];
+let selectedTag = null;
+
+// 用户可选的标签建议（用于 newTagInput 的随机 placeholder）
+const TAG_SUGGESTIONS = ['例：选择题', '例：填空题', '例：简答题', '例：编程题', '例：阅读笔记', '例：错题整理', '例：背诵', '例：复习要点'];
+
+function getRandomSuggestion() {
+    return TAG_SUGGESTIONS[Math.floor(Math.random() * TAG_SUGGESTIONS.length)];
+}
+
+// 颜色调色板（与页面整体暖色系搭配的柔和色彩）
+const TAG_PALETTE = [
+    { bg: '#f7e6dc', border: '#edd1bf', accent: '#d4a574', text: '#6b5845' },
+    { bg: '#e7f3ea', border: '#cfe6d7', accent: '#6fb39f', text: '#35594a' },
+    { bg: '#f3eaf6', border: '#e6d7ee', accent: '#a77fc9', text: '#4a2f4f' },
+    { bg: '#fff3e8', border: '#f1dcc5', accent: '#d49a5a', text: '#6b5845' },
+    { bg: '#eaf4ff', border: '#d6e8ff', accent: '#6b9fe6', text: '#254a73' },
+    { bg: '#fff8e9', border: '#f3e7c9', accent: '#c49a6a', text: '#6b5845' }
+];
+
+function hashStringToInt(str) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) {
+        h = (h << 5) - h + str.charCodeAt(i);
+        h |= 0;
+    }
+    return Math.abs(h);
+}
+
+function getPaletteForTag(tag) {
+    const idx = hashStringToInt(tag) % TAG_PALETTE.length;
+    return TAG_PALETTE[idx];
+}
+
+function applyTagStyle(el, tag, options = {}) {
+    // options: { selected: bool, sidebar: bool }
+    const pal = getPaletteForTag(tag);
+    if (options.selected) {
+        el.style.backgroundColor = pal.accent;
+        el.style.borderColor = pal.accent;
+        el.style.color = '#ffffff';
+    } else {
+        el.style.backgroundColor = pal.bg;
+        el.style.borderColor = pal.border;
+        el.style.color = pal.text;
+    }
+    if (options.sidebar) {
+        el.style.borderRadius = '14px';
+        el.style.padding = '6px 10px';
+        el.style.fontSize = '12px';
+        el.style.marginRight = '8px';
+    }
+}
+
+const STORAGE_KEY = 'studyTimerSessions';
+
+// ================= 初始化 =================
+function init() {
+    loadSessions();
+    loadTags();
+    renderSessions();
+    renderTagOptions();
+    setupEventListeners();
+}
+
+// 标签加载与渲染
+function loadTags() {
+    const data = localStorage.getItem(TAGS_KEY);
+    if (data) {
+        try {
+            presetTags = JSON.parse(data);
+        } catch (e) {
+            presetTags = [];
+        }
+    }
+    // 不再自动创建任何默认标签，所有标签由用户自己添加。
+    if (!presetTags) presetTags = [];
+}
+
+function saveTags() {
+    localStorage.setItem(TAGS_KEY, JSON.stringify(presetTags));
+}
+
+function renderTagOptions() {
+    if (!DOM.tagContainer) return;
+    DOM.tagContainer.innerHTML = '';
+    if (presetTags.length > 0) {
+        presetTags.forEach(tag => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'tag-bubble';
+        btn.dataset.tag = tag;
+        btn.textContent = tag;
+
+        // 应用配色
+        applyTagStyle(btn, tag, { selected: tag === selectedTag, sidebar: false });
+
+        // 添加删除小图标（点击时通过事件代理处理）
+        const close = document.createElement('span');
+        close.className = 'tag-close';
+        close.dataset.tag = tag;
+        close.title = '删除标签';
+        close.textContent = '✕';
+        btn.appendChild(close);
+
+        DOM.tagContainer.appendChild(btn);
+        });
+    } else {
+        // 当没有任何用户自建标签时，显示提示文字（靠近添加气泡）
+        const info = document.createElement('div');
+        info.style.color = 'var(--color-text-light)';
+        info.style.fontSize = '13px';
+        info.style.padding = '6px 8px';
+        info.textContent = '还没有标签，点击 + 添加一个';
+        DOM.tagContainer.appendChild(info);
+    }
+    // 添加一个 "添加标签" 的气泡放在最后
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'tag-bubble tag-add';
+    addBtn.dataset.tag = '__add__';
+    addBtn.textContent = '+ 添加标签';
+    DOM.tagContainer.appendChild(addBtn);
+}
+
+// ================= 事件监听器 =================
+function setupEventListeners() {
+    // 计时器按钮
+    DOM.startBtn.addEventListener('click', handleStart);
+    DOM.markBtn.addEventListener('click', showMarkModal);
+    DOM.endBtn.addEventListener('click', handleEnd);
+
+    // 名称模态框
+    DOM.nameConfirm.addEventListener('click', confirmName);
+    DOM.nameCancel.addEventListener('click', () => closeModal('nameModal'));
+    DOM.nameInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') confirmName();
+    });
+    document.getElementById('nameClose').addEventListener('click', () => closeModal('nameModal'));
+
+    // 标记/标签模态框
+    DOM.markConfirm.addEventListener('click', confirmMark);
+    DOM.markCancel.addEventListener('click', handleMarkCancel);
+
+    // 事件代理：标签池内点击（选择标签或点击添加气泡）
+    if (DOM.tagContainer) {
+        DOM.tagContainer.addEventListener('click', (e) => {
+            // 优先处理删除小图标
+            const closeBtn = e.target.closest('.tag-close');
+            if (closeBtn) {
+                const tagToDelete = closeBtn.dataset.tag;
+                if (!tagToDelete) return;
+                // 确认删除（仅删除预设，不修改历史记录中的已有标记）
+                if (!confirm(`确定删除标签 “${tagToDelete}” 吗？历史中的已有标记名称不会被修改。`)) return;
+                presetTags = presetTags.filter(t => t !== tagToDelete);
+                saveTags();
+                if (selectedTag === tagToDelete) selectedTag = null;
+                renderTagOptions();
+                return;
+            }
+
+            const btn = e.target.closest('.tag-bubble');
+            if (!btn) return;
+            const tag = btn.dataset.tag;
+            if (tag === '__add__') {
+                // 显示新标签输入区，并给输入框一个随机的提示占位文字
+                if (DOM.newTagContainer) DOM.newTagContainer.style.display = 'flex';
+                if (DOM.newTagInput) {
+                    DOM.newTagInput.placeholder = getRandomSuggestion();
+                    DOM.newTagInput.focus();
+                }
+            } else {
+                // 选择标签：更新 selectedTag 样式
+                selectedTag = tag;
+                // 更新气泡样式（使用配色函数）
+                Array.from(DOM.tagContainer.querySelectorAll('.tag-bubble')).forEach(b => {
+                    const t = b.dataset.tag;
+                    if (t && t !== '__add__') {
+                        applyTagStyle(b, t, { selected: t === selectedTag, sidebar: false });
+                    }
+                });
+            }
+        });
+    }
+
+    // 新标签确认/取消按钮
+    if (DOM.addTagConfirm) {
+        DOM.addTagConfirm.addEventListener('click', () => {
+            const v = DOM.newTagInput.value.trim();
+            if (!v) { alert('请输入标签名称'); return; }
+            if (!presetTags.includes(v)) {
+                presetTags.push(v);
+                saveTags();
+                renderTagOptions();
+            }
+            // 选择新添加的标签并隐藏输入区
+            selectedTag = v;
+            Array.from(DOM.tagContainer.querySelectorAll('.tag-bubble')).forEach(b => {
+                const t = b.dataset.tag;
+                if (t && t !== '__add__') applyTagStyle(b, t, { selected: t === selectedTag, sidebar: false });
+            });
+            if (DOM.newTagContainer) DOM.newTagContainer.style.display = 'none';
+            DOM.newTagInput.value = '';
+        });
+    }
+
+    if (DOM.addTagCancel) {
+        DOM.addTagCancel.addEventListener('click', () => {
+            if (DOM.newTagContainer) DOM.newTagContainer.style.display = 'none';
+        });
+    }
+
+    // 重命名模态框
+    DOM.renameConfirm.addEventListener('click', confirmRename);
+    DOM.renameCancel.addEventListener('click', () => closeModal('renameModal'));
+    DOM.renameInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') confirmRename();
+    });
+
+    // 侧边栏切换
+    DOM.sidebarToggle.addEventListener('click', toggleSidebar);
+
+    // 趋势分析按钮
+    const trendBtn = document.getElementById('trendBtn');
+    if (trendBtn) trendBtn.addEventListener('click', openTrendModal);
+    document.getElementById('trendClose').addEventListener('click', () => closeModal('trendModal'));
+
+    // 清空历史记录
+    if (DOM.clearHistoryBtn) {
+        DOM.clearHistoryBtn.addEventListener('click', clearHistory);
+    }
+
+    // 背景固定为渐变，已移除切换功能
+
+    // 关闭模态框（点击遮罩）
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal')) {
+            const modalId = e.target.id;
+            closeModal(modalId);
+            // 如果是标记模态框被关闭且标记前计时器在运行，且当前不是在编辑已有标记，则恢复计时
+            if (modalId === 'markModal') {
+                if (!editingMarkTarget && wasRunningBeforeMark) {
+                    resumeTimer();
+                }
+                wasRunningBeforeMark = false;
+                // 清理编辑状态（若有）
+                editingMarkTarget = null;
+            }
+        }
+    });
+
+    // 标记模态框取消处理：如果在编辑已有标记，关闭并清理编辑状态；否则按原逻辑处理（可能恢复计时）
+    function handleMarkCancel() {
+        closeModal('markModal');
+        if (editingMarkTarget) {
+            editingMarkTarget = null;
+            return;
+        }
+        if (wasRunningBeforeMark) {
+            resumeTimer();
+            wasRunningBeforeMark = false;
+        }
+    }
+}
+
+// ================= 计时器逻辑 =================
+function handleStart() {
+    if (!isRunning) {
+        showModal('nameModal');
+        DOM.nameInput.focus();
+    } else if (isPaused) {
+        resumeTimer();
+    } else {
+        pauseTimer();
+    }
+}
+
+function confirmName() {
+    const name = DOM.nameInput.value.trim();
+    if (!name) {
+        alert('请输入计时名称');
+        return;
+    }
+
+    closeModal('nameModal');
+    DOM.nameInput.value = '';
+
+    // 创建新的计时会话
+    currentSessionId = Date.now();
+    const session = {
+        id: currentSessionId,
+        name: name,
+        startTime: Date.now(),
+        duration: 0,
+        marks: [],
+    };
+
+    allSessions.push(session);
+    saveSessions();
+
+    // 启动计时器
+    isRunning = true;
+    isPaused = false;
+    lastMarkTime = elapsedSeconds;
+    elapsedSeconds = 0;
+
+    updateButtonStates();
+    DOM.timerTitle.textContent = name;
+
+    startTimer();
+}
+
+let timerInterval = null;
+
+function startTimer() {
+    timerInterval = setInterval(() => {
+        elapsedSeconds++;
+        updateDisplay();
+
+        // 更新当前会话的时长
+        const session = allSessions.find(s => s.id === currentSessionId);
+        if (session) {
+            session.duration = elapsedSeconds;
+            saveSessions();
+        }
+    }, 1000);
+}
+
+function pauseTimer() {
+    isPaused = true;
+    clearInterval(timerInterval);
+    updateButtonStates();
+}
+
+function resumeTimer() {
+    isPaused = false;
+    updateButtonStates();
+    startTimer();
+}
+
+function handleEnd() {
+    isRunning = false;
+    isPaused = false;
+    clearInterval(timerInterval);
+    elapsedSeconds = 0;
+    currentSessionId = null;
+
+    updateDisplay();
+    updateButtonStates();
+    DOM.timerTitle.textContent = '准备开始新的计时';
+
+    saveSessions();
+    renderSessions();
+}
+
+function showMarkModal() {
+    // 如果计时器在运行，暂停它
+    if (isRunning && !isPaused) {
+        wasRunningBeforeMark = true;
+        pauseTimer();
+    } else {
+        wasRunningBeforeMark = false;
+    }
+    
+    // 准备标签选择器
+    loadTags();
+    renderTagOptions();
+    showModal('markModal');
+    if (DOM.newTagContainer) DOM.newTagContainer.style.display = 'none';
+    // 不在打开模态时自动选择任何标签，等待用户选择或新建
+    selectedTag = null;
+    if (DOM.tagContainer) {
+        Array.from(DOM.tagContainer.querySelectorAll('.tag-bubble')).forEach(b => {
+            b.classList.toggle('selected', false);
+        });
+    }
+}
+
+// 打开用于编辑已存在标记的模态框（不影响计时器运行状态）
+function editMark(sessionId, markIndex) {
+    const session = allSessions.find(s => s.id === sessionId);
+    if (!session || !session.marks || !session.marks[markIndex]) return;
+    const existing = session.marks[markIndex];
+    // 标识当前为编辑状态
+    editingMarkTarget = { sessionId, markIndex };
+    // 将当前标记名预选为 selectedTag（若该标签不在 presetTags 中，也在 UI 中显示为临时气泡）
+    selectedTag = existing.name;
+    loadTags();
+    renderTagOptions();
+
+    // 如果当前标签不在预设中，插入一个临时气泡以便用户看到并可选择
+    if (selectedTag && !presetTags.includes(selectedTag) && DOM.tagContainer) {
+        const temp = document.createElement('button');
+        temp.type = 'button';
+        temp.className = 'tag-bubble';
+        temp.dataset.tag = selectedTag;
+        temp.textContent = selectedTag;
+        applyTagStyle(temp, selectedTag, { selected: true, sidebar: false });
+        // 把临时气泡放在最前面
+        DOM.tagContainer.insertBefore(temp, DOM.tagContainer.firstChild);
+    } else {
+        // 若是已在预设中，确保样式被标为选中
+        Array.from(DOM.tagContainer.querySelectorAll('.tag-bubble')).forEach(b => {
+            const t = b.dataset.tag;
+            if (t && t !== '__add__') applyTagStyle(b, t, { selected: t === selectedTag, sidebar: false });
+        });
+    }
+
+    if (DOM.newTagContainer) DOM.newTagContainer.style.display = 'none';
+    showModal('markModal');
+}
+
+function confirmMark() {
+    const selected = selectedTag;
+    if (!selected) {
+        alert('请选择或添加一个标签');
+        return;
+    }
+
+    // 如果当前处于编辑已有标记的模式，则修改对应会话的该标记名称
+    if (editingMarkTarget) {
+        const sess = allSessions.find(s => s.id === editingMarkTarget.sessionId);
+        if (sess && sess.marks && sess.marks[editingMarkTarget.markIndex]) {
+            sess.marks[editingMarkTarget.markIndex].name = selected;
+            saveSessions();
+            renderSessions();
+        }
+        editingMarkTarget = null;
+        closeModal('markModal');
+        if (DOM.newTagInput) DOM.newTagInput.value = '';
+        return;
+    }
+
+    // 正常新增标记的流程（来自计时界面的“标记”按钮）
+    const session = allSessions.find(s => s.id === currentSessionId);
+    if (session) {
+        const markDuration = elapsedSeconds - lastMarkTime;
+        session.marks.push({
+            name: selected,
+            time: markDuration,
+            timestamp: Date.now(),
+        });
+
+        lastMarkTime = elapsedSeconds;
+        saveSessions();
+        renderSessions();
+    }
+
+    closeModal('markModal');
+    if (DOM.newTagInput) DOM.newTagInput.value = '';
+    
+    // 如果标记前计时器在运行，标记完成后自动继续
+    if (wasRunningBeforeMark) {
+        resumeTimer();
+        wasRunningBeforeMark = false;
+    }
+}
+
+function updateDisplay() {
+    const h = Math.floor(elapsedSeconds / 3600);
+    const m = Math.floor((elapsedSeconds % 3600) / 60);
+    const s = elapsedSeconds % 60;
+
+    DOM.hours.textContent = String(h).padStart(2, '0');
+    DOM.minutes.textContent = String(m).padStart(2, '0');
+    DOM.seconds.textContent = String(s).padStart(2, '0');
+}
+
+function updateButtonStates() {
+    if (isRunning && !isPaused) {
+        DOM.startBtn.textContent = '暂停';
+        DOM.startBtn.style.pointerEvents = 'auto';
+        DOM.markBtn.disabled = false;
+        DOM.endBtn.disabled = false;
+    } else if (isRunning && isPaused) {
+        DOM.startBtn.textContent = '继续';
+        DOM.startBtn.style.pointerEvents = 'auto';
+        DOM.markBtn.disabled = false;  // 暂停时标记按钮也可用
+        DOM.endBtn.disabled = false;
+    } else {
+        DOM.startBtn.textContent = '开始';
+        DOM.markBtn.disabled = true;
+        DOM.endBtn.disabled = true;
+    }
+}
+
+// ================= 侧边栏功能 =================
+function toggleSidebar() {
+    const isCollapsed = DOM.sidebar.classList.toggle('collapsed');
+    document.querySelector('.main-container').classList.toggle('sidebar-collapsed');
+    DOM.sidebarToggle.classList.toggle('rotated');
+}
+
+function renderSessions() {
+    DOM.sidebarContent.innerHTML = '';
+
+    if (allSessions.length === 0) {
+        DOM.sidebarContent.innerHTML = '<p style="color: var(--color-text-light); text-align: center; padding: 20px; font-size: 12px;">暂无计时记录</p>';
+        return;
+    }
+
+    allSessions.forEach(session => {
+        const sessionEl = createSessionElement(session);
+        DOM.sidebarContent.appendChild(sessionEl);
+    });
+}
+
+function createSessionElement(session) {
+    const container = document.createElement('div');
+    container.className = 'sidebar-item';
+    container.dataset.sessionId = session.id;
+
+    const header = document.createElement('div');
+    header.className = 'sidebar-item-header';
+
+    const title = document.createElement('span');
+    title.className = 'sidebar-item-title';
+    title.textContent = session.name;
+    title.addEventListener('click', () => {
+        renameTarget = { type: 'session', id: session.id };
+        DOM.renameInput.value = session.name;
+        showModal('renameModal');
+        DOM.renameInput.focus();
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'sidebar-item-actions';
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'icon-btn';
+    deleteBtn.textContent = '✕';
+    deleteBtn.addEventListener('click', () => {
+        if (confirm('确定要删除这个计时记录吗？')) {
+            deleteSession(session.id);
+        }
+    });
+
+    actions.appendChild(deleteBtn);
+    header.appendChild(title);
+    header.appendChild(actions);
+
+    container.appendChild(header);
+
+    const timeEl = document.createElement('div');
+    timeEl.className = 'sidebar-item-time';
+    timeEl.textContent = `总用时：${formatTime(session.duration)}`;
+    container.appendChild(timeEl);
+
+    // 添加标记
+    if (session.marks.length > 0) {
+        session.marks.forEach((mark, index) => {
+            const markEl = document.createElement('div');
+            markEl.className = 'sidebar-mark';
+
+            const markInfo = document.createElement('div');
+            markInfo.className = 'sidebar-mark-info';
+
+            // 使用气泡样式展示标签名称；点击进入标签选择模态（可重新选择或添加标签）
+            const markBubble = document.createElement('span');
+            markBubble.className = 'sidebar-mark-bubble';
+            markBubble.textContent = mark.name;
+            markBubble.title = '点击编辑此标记（可重新选择或添加标签）';
+            markBubble.addEventListener('click', () => {
+                // 打开编辑模式的标签选择模态，不影响计时器运行
+                editMark(session.id, index);
+            });
+            // 应用与模态中一致的配色规则
+            applyTagStyle(markBubble, mark.name, { selected: false, sidebar: true });
+
+            const markTime = document.createElement('span');
+            markTime.className = 'sidebar-mark-time';
+            markTime.textContent = formatTime(mark.time);
+
+            markInfo.appendChild(markBubble);
+            markInfo.appendChild(markTime);
+
+            const markActions = document.createElement('div');
+            markActions.className = 'sidebar-mark-actions';
+
+            const deleteMarkBtn = document.createElement('button');
+            deleteMarkBtn.className = 'icon-btn';
+            deleteMarkBtn.textContent = '✕';
+            deleteMarkBtn.style.fontSize = '14px';
+            deleteMarkBtn.addEventListener('click', () => {
+                deleteMark(session.id, index);
+            });
+
+            markActions.appendChild(deleteMarkBtn);
+
+            markEl.appendChild(markInfo);
+            markEl.appendChild(markActions);
+            container.appendChild(markEl);
+        });
+    }
+
+    return container;
+}
+
+function formatTime(seconds) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+
+    if (h > 0) {
+        return `${h}时${m}分${s}秒`;
+    } else if (m > 0) {
+        return `${m}分${s}秒`;
+    } else {
+        return `${s}秒`;
+    }
+}
+
+function deleteSession(sessionId) {
+    allSessions = allSessions.filter(s => s.id !== sessionId);
+    saveSessions();
+    renderSessions();
+}
+
+function deleteMark(sessionId, markIndex) {
+    const session = allSessions.find(s => s.id === sessionId);
+    if (session) {
+        session.marks.splice(markIndex, 1);
+        saveSessions();
+        renderSessions();
+    }
+}
+
+// 清空所有本地存储的计时记录
+function clearHistory() {
+    if (!confirm('确定要清空所有计时记录吗？此操作无法恢复。')) return;
+
+    allSessions = [];
+    saveSessions();
+    renderSessions();
+}
+
+// ================= 重命名功能 =================
+function confirmRename() {
+    const newName = DOM.renameInput.value.trim();
+    if (!newName) {
+        alert('请输入新名称');
+        return;
+    }
+
+    if (renameTarget.type === 'session') {
+        const session = allSessions.find(s => s.id === renameTarget.id);
+        if (session) {
+            session.name = newName;
+            saveSessions();
+            renderSessions();
+        }
+    } else if (renameTarget.type === 'mark') {
+        const session = allSessions.find(s => s.id === renameTarget.sessionId);
+        if (session && session.marks[renameTarget.markIndex]) {
+            session.marks[renameTarget.markIndex].name = newName;
+            saveSessions();
+            renderSessions();
+        }
+    }
+
+    closeModal('renameModal');
+    renameTarget = null;
+}
+
+// ================= 模态框控制 =================
+function showModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('active');
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// ================= 背景切换 =================
+// 背景切换功能已移除。背景使用固定的渐变样式（在 HTML 中设置了 `bg-1` 类）。
+
+// ================= 本地存储 =================
+function saveSessions() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(allSessions));
+}
+
+function loadSessions() {
+    const data = localStorage.getItem(STORAGE_KEY);
+    if (data) {
+        allSessions = JSON.parse(data);
+    }
+}
+
+// ================ 趋势分析功能 ================
+function gatherTagsFromHistory() {
+    const set = new Set();
+    allSessions.forEach(s => {
+        (s.marks || []).forEach(m => set.add(m.name));
+    });
+    // 若历史中没有标签，则使用预设池（用户可能已添加但未使用）
+    if (set.size === 0 && presetTags && presetTags.length > 0) {
+        presetTags.forEach(t => set.add(t));
+    }
+    return Array.from(set);
+}
+
+function computeTagSeries(tag) {
+    // 返回 { labels: [...session names...], values: [...seconds per session...], avg: number }
+    const labels = [];
+    const values = [];
+    allSessions.forEach(s => {
+        let sum = 0;
+        (s.marks || []).forEach(m => { if (m.name === tag) sum += (m.time || 0); });
+        // 仅当该会话有该标签相关的记录时才加入序列
+        if (sum > 0) {
+            labels.push(s.name || ('#' + s.id));
+            values.push(sum);
+        }
+    });
+    // 计算平均值（仅计算出现过的会话，若都为0，则 avg 为0）
+    const nonZero = values.filter(v => v > 0);
+    const avg = nonZero.length ? Math.round((nonZero.reduce((a,b)=>a+b,0) / nonZero.length)) : 0;
+    return { labels, values, avg };
+}
+
+function openTrendModal() {
+    const tags = gatherTagsFromHistory();
+    const container = document.getElementById('trendContainer');
+    container.innerHTML = '';
+    if (tags.length === 0) {
+        const p = document.createElement('div');
+        p.textContent = '暂无标签数据用于趋势分析，请先添加并记录一些标记。';
+        p.style.color = 'var(--color-text-light)';
+        container.appendChild(p);
+        showModal('trendModal');
+        return;
+    }
+
+    tags.forEach(tag => {
+        const block = document.createElement('div');
+        block.style.background = 'rgba(255,255,255,0.98)';
+        block.style.padding = '12px';
+        block.style.borderRadius = '12px';
+        block.style.boxShadow = '0 8px 20px rgba(0,0,0,0.04)';
+
+        const meta = document.createElement('div');
+        meta.style.display = 'flex';
+        meta.style.justifyContent = 'space-between';
+        meta.style.alignItems = 'center';
+        meta.style.marginBottom = '8px';
+
+        const title = document.createElement('div');
+        title.style.display = 'flex';
+        title.style.alignItems = 'center';
+        title.style.gap = '12px';
+        // 标签气泡（与模态/侧边栏气泡视觉一致）
+        const tagBubble = document.createElement('span');
+        tagBubble.className = 'tag-bubble';
+        tagBubble.textContent = tag;
+        applyTagStyle(tagBubble, tag, { selected: false, sidebar: false });
+        tagBubble.style.fontWeight = '700';
+        // 附加说明文字
+        const titleText = document.createElement('div');
+        titleText.style.fontWeight = '700';
+        titleText.textContent = '用时曲线图';
+        title.appendChild(tagBubble);
+        title.appendChild(titleText);
+
+        const stats = document.createElement('div');
+        stats.style.fontSize = '13px';
+        stats.style.color = 'var(--color-text-light)';
+
+        const series = computeTagSeries(tag);
+        const avgSecs = series.avg;
+        const unit = avgSecs >= 3600 ? '小时' : (avgSecs >= 60 ? '分钟' : '秒');
+        let avgDisplay = '0秒';
+        if (avgSecs > 0) {
+            if (unit === '小时') avgDisplay = (avgSecs/3600).toFixed(2) + 'h';
+            else if (unit === '分钟') avgDisplay = (avgSecs/60).toFixed(1) + 'm';
+            else avgDisplay = avgSecs + 's';
+        }
+        stats.textContent = `平均：${avgDisplay}`;
+
+        // 当没有会话包含此标签时，显示友好提示而非空图表
+        if (!series.labels || series.labels.length === 0) {
+            meta.appendChild(title);
+            meta.appendChild(stats);
+            const p = document.createElement('div');
+            p.textContent = '该标签暂无使用记录，无法绘制曲线。';
+            p.style.color = 'var(--color-text-light)';
+            p.style.padding = '12px 8px';
+            block.appendChild(meta);
+            block.appendChild(p);
+            container.appendChild(block);
+            return; // continue to next tag in forEach
+        }
+
+        meta.appendChild(title);
+        meta.appendChild(stats);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.min(820, Math.max(480, window.innerWidth * 0.8));
+        canvas.height = 220;
+
+        block.appendChild(meta);
+        block.appendChild(canvas);
+        container.appendChild(block);
+        // draw chart (use tag to color the curve)
+        drawLineChart(canvas, series.labels, series.values, unit, tag);
+    });
+
+    showModal('trendModal');
+}
+
+function drawLineChart(canvas, labels, values, unitLabel, tag) {
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0,0,w,h);
+
+    const padding = { left: 48, right: 16, top: 16, bottom: 48 };
+    const plotW = w - padding.left - padding.right;
+    const plotH = h - padding.top - padding.bottom;
+    // 留出内部边距，让曲线只占用绘图区的 90% 宽度和 90% 高度
+    const innerMarginRatio = 0.05; // 5% 两侧
+    const innerPlotW = plotW * (1 - innerMarginRatio * 2);
+    const innerPlotXStart = padding.left + plotW * innerMarginRatio;
+    const innerPlotYTop = padding.top + plotH * innerMarginRatio;
+    const innerPlotH = plotH * (1 - innerMarginRatio * 2);
+
+    // y scale: determine max value
+    const maxVal = Math.max(...values, 1);
+    const yTicks = 4;
+    const yStep = Math.ceil(maxVal / yTicks);
+
+    // draw y axis grid and labels
+    ctx.fillStyle = '#6b5845';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    for (let i=0;i<=yTicks;i++) {
+        const val = i * yStep;
+        const y = padding.top + plotH - (val / (yStep*yTicks)) * plotH;
+        ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+        ctx.beginPath(); ctx.moveTo(padding.left, y); ctx.lineTo(padding.left+plotW, y); ctx.stroke();
+        // label transform according to unitLabel
+        let label = '';
+        if (unitLabel === '小时') label = (val/3600).toFixed(2) + 'h';
+        else if (unitLabel === '分钟') label = Math.round(val/60) + 'm';
+        else label = val + 's';
+        ctx.fillStyle = 'rgba(107,88,69,0.9)';
+        ctx.fillText(label, padding.left - 8, y);
+    }
+
+    // draw x labels and compute points (labels horizontal)
+    const n = labels.length;
+    const stepX = n > 1 ? innerPlotW / (n - 1) : innerPlotW;
+    const points = [];
+    for (let i=0;i<n;i++) {
+        const x = innerPlotXStart + (stepX * i);
+        // 规范化值到 0..1，然后映射到 innerPlotH 的 0..innerPlotH 范围（上边距为小）
+        const norm = Math.max(0, Math.min(1, values[i] / (yStep * yTicks)));
+        const y = innerPlotYTop + (1 - norm) * innerPlotH;
+        points.push({x,y});
+        // x label
+        ctx.textAlign = 'center';
+        ctx.fillStyle = 'rgba(107,88,69,0.85)';
+        // 简短化过长的标签以免拥挤
+        let lab = labels[i];
+        if (lab.length > 18) lab = lab.slice(0,16) + '…';
+        // 保证 x 轴标签不会超出画布左右边界
+        const textX = Math.min(Math.max(x, padding.left + 6), padding.left + plotW - 6);
+        ctx.fillText(lab, textX, padding.top + plotH + 18);
+    }
+    // draw polyline (straight-line connections between points)
+    let strokeColor = 'rgba(196,154,106,0.95)';
+    if (tag) {
+        const pal = getPaletteForTag(tag);
+        strokeColor = pal.accent || strokeColor;
+    }
+    if (points.length > 0) {
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) {
+            const curr = points[i];
+            ctx.lineTo(curr.x, curr.y);
+        }
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = 2;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.stroke();
+
+        // draw points on top
+        points.forEach(p => {
+            ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fillStyle = strokeColor; ctx.fill();
+            // small white center for contrast
+            ctx.beginPath(); ctx.arc(p.x, p.y, 1.6, 0, Math.PI*2); ctx.fillStyle = '#ffffff'; ctx.fill();
+        });
+    }
+
+    // y axis label
+    ctx.save(); ctx.translate(12, h/2); ctx.rotate(-Math.PI/2);
+    ctx.fillStyle = 'rgba(107,88,69,0.85)'; ctx.textAlign = 'center'; ctx.fillText('用时 ('+unitLabel+')', 0, 0); ctx.restore();
+}
+
+// ================= 启动应用 =================
+document.addEventListener('DOMContentLoaded', init);
+/* --- script.js 内容结束 --- */
+    </script>
+</body>
+</html>
